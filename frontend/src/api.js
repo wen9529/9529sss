@@ -1,37 +1,28 @@
 import axios from 'axios';
 
+const API_URL = 'https://wenge9529.serv00.net/backend/api';
+
 const api = axios.create({
-  baseURL: 'https://wenge9529.serv00.net',
-  headers: {
-    'Content-Type': 'application/json'
-  }
+    baseURL: API_URL,
 });
 
 api.interceptors.request.use(config => {
-  const token = localStorage.getItem('game_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
+    const token = localStorage.getItem('game_token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
 });
 
 // Auth
-export const login = (username, password) => 
-    api.post('/api/auth', { username, password });
+export const loginOrRegister = (username, password) => api.post('/auth.php', { username, password });
 
 // Lobby
-export const getGames = () => 
-    api.get('/api/lobby');
-
-export const createGame = (name) => 
-    api.post('/api/lobby', { name });
+export const getGames = () => api.get('/lobby.php');
+export const createGame = (name) => api.post('/lobby.php', { name });
 
 // Game
-export const getGameState = (gameId) => 
-    api.get(`/api/game/${gameId}`);
-
-export const makeMove = (gameId, move) => 
-    api.post(`/api/game/${gameId}`, { move });
-
+export const getGame = (id) => api.get(`/game.php?id=${id}`);
+export const makeMove = (gameId, move) => api.post(`/game.php?id=${gameId}`, { move });
 
 export default api;
