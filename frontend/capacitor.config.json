@@ -1,0 +1,10 @@
+{
+  "appId": "com.thirteenwater.app",
+  "appName": "十三水",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "url": "https://9525.ip-ddns.com",
+    "cleartext": true
+  }
+}
