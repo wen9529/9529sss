@@ -1,7 +1,7 @@
 // frontend/src/pages/Login.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../api';
+import { loginOrRegister } from '../api';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -11,7 +11,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await login(username, password);
+      const res = await loginOrRegister(username, password);
       if (res.data.user) {
         localStorage.setItem('game_user', JSON.stringify(res.data.user));
         navigate('/lobby');
