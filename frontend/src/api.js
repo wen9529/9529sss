@@ -1,8 +1,7 @@
-// frontend/src/api.js
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/backend', // Updated to point to the backend folder
+  baseURL: 'https://wenge9529.serv00.net',
   headers: {
     'Content-Type': 'application/json'
   }

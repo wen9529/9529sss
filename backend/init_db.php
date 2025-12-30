@@ -24,7 +24,7 @@ try {
 
     // Create database if not exists
     $pdo->exec("CREATE DATABASE IF NOT EXISTS `$dbname` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-    $pdo->exec("USE `$dbname` text;");
+    $pdo->exec("USE `$dbname`;");
 
     echo "Database created or already exists.\n";
 
