@@ -1,13 +1,4 @@
-
-# Deny access to files starting with .env
-<Files ".env*">
-    Require all denied
-</Files>
-
-# Deny access to composer files
-<Files "composer.*">
-    Require all denied
-</Files>
-
-# Deny access to vendor directory
-RedirectMatch 403 /vendor/
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]

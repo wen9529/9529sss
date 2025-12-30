@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api', 
+  baseURL: '/backend', // Updated to point to the backend folder
   headers: {
     'Content-Type': 'application/json'
   }
@@ -16,26 +16,23 @@ api.interceptors.request.use(config => {
   return config;
 });
 
-export const loginOrRegister = (mobile, password) => 
-    api.post('/auth.php?action=login_or_register', { mobile, password });
+// Auth
+export const login = (username, password) => 
+    api.post('/api/auth', { username, password });
 
-// 新增：获取最新用户信息
-export const getUserInfo = () => 
-    api.post('/auth.php?action=get_info');
+// Lobby
+export const getGames = () => 
+    api.get('/api/lobby');
 
-export const searchUser = (mobile) => 
-    api.post('/auth.php?action=search_user', { mobile });
+export const createGame = (name) => 
+    api.post('/api/lobby', { name });
 
-export const transferPoints = (target_id, amount) => 
-    api.post('/auth.php?action=transfer', { target_id, amount });
+// Game
+export const getGameState = (gameId) => 
+    api.get(`/api/game/${gameId}`);
 
-export const joinGame = (level) => 
-    api.get(`/lobby.php?action=join_game&level=${level}`);
+export const makeMove = (gameId, move) => 
+    api.post(`/api/game/${gameId}`, { move });
 
-export const getHand = () => 
-    api.get('/game.php?action=get_hand');
-
-export const submitHand = (sessionId, deckId, arranged) => 
-    api.post('/game.php?action=submit_hand', { session_id: sessionId, deck_id: deckId, arranged });
 
 export default api;

@@ -1,116 +1,69 @@
 import React, { useState, useEffect } from 'react';
-import { getHand, submitHand } from '../api';
-import Card from '../components/Card';
+import { useParams } from 'react-router-dom';
+import { getGameState, makeMove } from '../api';
+import Navbar from '../components/Navbar';
 
 const GameTable = () => {
-  const [session, setSession] = useState(null);
-  const [cards, setCards] = useState([]);
-  const [solutions, setSolutions] = useState([]);
-  const [arranged, setArranged] = useState({ front: [], mid: [], back: [] });
+  const [gameState, setGameState] = useState(null);
+  const [move, setMove] = useState('');
   const [loading, setLoading] = useState(true);
-  const [roundInfo, setRoundInfo] = useState("");
-  const [deckId, setDeckId] = useState(null);
+  const { gameId } = useParams();
 
-  useEffect(() => { fetchHand(); }, []);
+  useEffect(() => {
+    fetchGameState();
+  }, [gameId]);
 
-  const fetchHand = async () => {
+  const fetchGameState = async () => {
     setLoading(true);
-    const res = await getHand();
-    if (res.status === 'success') {
-      setSession(res.session_id);
-      setCards(res.cards);
-      setSolutions(res.solutions);
-      setRoundInfo(res.round_info);
-      setDeckId(res.deck_id);
-      setArranged({ front: [], mid: [], back: [] });
-    } else if (res.status === 'finished') {
-      window.location.href = '/lobby';
+    try {
+      const res = await getGameState(gameId);
+      setGameState(res.data);
+    } catch (err) {
+      console.error(err);
     }
     setLoading(false);
   };
 
-  const useSolution = (sol) => {
-    setArranged({
-      front: sol.front,
-      mid: sol.mid,
-      back: sol.back
-    });
-    setCards([]); // 清空备选池
-  };
-
-  const selectCard = (card, lane) => {
-    if (lane === 'pool') {
-      if (arranged.front.length < 3) setArranged({...arranged, front: [...arranged.front, card]});
-      else if (arranged.mid.length < 5) setArranged({...arranged, mid: [...arranged.mid, card]});
-      else if (arranged.back.length < 5) setArranged({...arranged, back: [...arranged.back, card]});
-      setCards(cards.filter(c => c !== card));
-    } else {
-      setArranged({...arranged, [lane]: arranged[lane].filter(c => c !== card)});
-      setCards([...cards, card]);
+  const handleMakeMove = async (e) => {
+    e.preventDefault();
+    try {
+      await makeMove(gameId, move);
+      setMove('');
+      fetchGameState(); // Refresh game state after move
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const handleSubmit = async () => {
-    setLoading(true);
-    const res = await submitHand({ session_id: session, deck_id: deckId, arranged });
-    if (res.status === 'success') {
-      fetchHand();
-    } else {
-      alert(res.message);
-      setLoading(false);
-    }
-  };
-
-  if (loading) return <div className="p-10 text-white text-center">处理中...</div>;
+  if (loading) {
+    return <div className="h-full flex flex-col overflow-hidden">Loading...</div>;
+  }
 
   return (
-    <div className="min-h-screen bg-slate-900 p-4 flex flex-col items-center">
-      <div className="text-emerald-400 font-mono mb-4 text-xl">{roundInfo}</div>
+    <div className="h-full flex flex-col overflow-hidden">
+      <Navbar />
+      <div className="flex-1 bg-gray-100 p-4 flex flex-col gap-4 justify-center items-center overflow-hidden">
+        <div className="w-full max-w-4xl bg-white p-4 rounded-lg shadow-md">
+          <h2 className="text-xl font-bold mb-4">Game State</h2>
+          <pre className="bg-gray-200 p-4 rounded">
+            {JSON.stringify(gameState, null, 2)}
+          </pre>
+        </div>
 
-      {/* 推荐方案 */}
-      <div className="flex gap-2 mb-6">
-        {solutions.map((sol, idx) => (
-          <button 
-            key={idx}
-            onClick={() => useSolution(sol)}
-            className="bg-slate-700 hover:bg-slate-600 text-white text-xs px-3 py-2 rounded-lg border border-slate-500"
-          >
-            推荐摆法 {idx + 1}
+        <form onSubmit={handleMakeMove} className="w-full max-w-4xl flex gap-2 mt-4">
+          <input
+            type="text"
+            placeholder="Enter your move"
+            className="border p-3 rounded outline-blue-500 flex-grow"
+            value={move}
+            onChange={(e) => setMove(e.target.value)}
+            required
+          />
+          <button className="bg-blue-600 text-white p-3 rounded font-bold hover:bg-blue-700 transition active:scale-95">
+            Make Move
           </button>
-        ))}
+        </form>
       </div>
-
-      {/* 摆牌区 */}
-      <div className="w-full max-w-md bg-slate-800 rounded-2xl p-6 shadow-2xl space-y-6 border border-slate-700">
-        {['front', 'mid', 'back'].map(lane => (
-          <div key={lane}>
-            <div className="text-[10px] uppercase tracking-widest text-slate-400 mb-2">{lane === 'front' ? '头墩' : lane === 'mid' ? '中墩' : '尾墩'}</div>
-            <div className="flex justify-center min-h-[100px] bg-slate-900/50 rounded-xl p-2 items-center">
-              {arranged[lane].map((c, i) => (
-                <div key={i} onClick={() => selectCard(c, lane)} className="cursor-pointer -ml-8 first:ml-0 hover:-translate-y-2 transition-transform">
-                  <Card rank={c.rank} suit={c.suit} />
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* 备选区 */}
-      <div className="mt-8 flex flex-wrap justify-center gap-2 max-w-xl">
-        {cards.map((c, i) => (
-          <div key={i} onClick={() => selectCard(c, 'pool')} className="cursor-pointer hover:scale-110 transition-transform">
-            <Card rank={c.rank} suit={c.suit} />
-          </div>
-        ))}
-      </div>
-
-      <button 
-        onClick={handleSubmit}
-        className="mt-12 w-full max-w-md bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-black py-4 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all active:scale-95"
-      >
-        确认提交
-      </button>
     </div>
   );
 };

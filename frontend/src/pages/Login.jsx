@@ -1,23 +1,22 @@
 // frontend/src/pages/Login.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loginOrRegister } from '../api';
+import { login } from '../api';
 
 const Login = () => {
-  const [mobile, setMobile] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await loginOrRegister(mobile, password);
-      if (res.data.status === 'success') {
-        localStorage.setItem('game_token', res.data.token);
+      const res = await login(username, password);
+      if (res.data.user) {
         localStorage.setItem('game_user', JSON.stringify(res.data.user));
         navigate('/lobby');
       } else {
-        alert(res.data.message);
+        alert(res.data.error || '登录失败');
       }
     } catch (err) {
       alert('登录失败');
@@ -32,10 +31,10 @@ const Login = () => {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input 
             type="text" 
-            placeholder="手机号" 
+            placeholder="用户名" 
             className="border p-3 rounded outline-blue-500"
-            value={mobile}
-            onChange={e => setMobile(e.target.value)}
+            value={username}
+            onChange={e => setUsername(e.target.value)}
             required
           />
           <input 
@@ -50,7 +49,7 @@ const Login = () => {
             登录 / 注册
           </button>
         </form>
-        <p className="text-xs text-center text-gray-400 mt-4">新用户输入手机号和密码自动注册</p>
+        <p className="text-xs text-center text-gray-400 mt-4">新用户输入用户名和密码自动注册</p>
       </div>
     </div>
   );

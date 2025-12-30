@@ -1,73 +1,71 @@
-// frontend/src/pages/Lobby.jsx
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { joinGame } from '../api';
+import { getGames, createGame } from '../api';
 
 const Lobby = () => {
+  const [games, setGames] = useState([]);
+  const [newGameName, setNewGameName] = useState('');
   const navigate = useNavigate();
 
-  // 每次进入大厅，检查是否有未完成的牌局
   useEffect(() => {
-    checkExistingGame();
+    fetchGames();
   }, []);
 
-  const checkExistingGame = async () => {
+  const fetchGames = async () => {
     try {
-      // 尝试请求加入接口（带重连检测逻辑）
-      // 这里的 level 参数不重要，如果是重连，后端会忽略 level 直接返回旧 session
-      const res = await joinGame(2); 
-      if (res.data.status === 'success' && res.data.message?.includes('重连')) {
-         // 发现旧牌局，直接跳转
-         navigate('/game');
-      }
-    } catch (e) {
-      // 忽略错误，说明没有进行中的牌局
+      const res = await getGames();
+      setGames(res.data);
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const handleJoin = async (level) => {
+  const handleCreateGame = async (e) => {
+    e.preventDefault();
     try {
-      const res = await joinGame(level);
-      if (res.data.status === 'success') {
-        navigate('/game');
-      } else {
-        alert(res.data.message || '加入失败');
-      }
-    } catch (e) {
-      console.error(e);
-      alert('网络错误');
+      const res = await createGame(newGameName);
+      navigate(`/game/${res.data.id}`);
+    } catch (err) {
+      console.error(err);
     }
+  };
+
+  const handleJoinGame = (gameId) => {
+    navigate(`/game/${gameId}`);
   };
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
       <Navbar />
-      
+
       <div className="flex-1 bg-gray-100 p-4 flex flex-col gap-4 justify-center items-center overflow-hidden">
         <div className="w-full max-w-md flex flex-col gap-4">
-          {/* 2分场 */}
-          <div 
-            onClick={() => handleJoin(2)}
-            className="bg-gradient-to-r from-green-500 to-green-700 text-white h-32 rounded-2xl shadow-xl flex items-center justify-center text-3xl font-bold cursor-pointer active:scale-95 transition-transform border-2 border-green-400/30"
-          >
-            2 分场
-          </div>
+          <form onSubmit={handleCreateGame} className="flex gap-2">
+            <input
+              type="text"
+              placeholder="新游戏名称"
+              className="border p-3 rounded outline-blue-500 flex-grow"
+              value={newGameName}
+              onChange={(e) => setNewGameName(e.target.value)}
+              required
+            />
+            <button className="bg-blue-600 text-white p-3 rounded font-bold hover:bg-blue-700 transition active:scale-95">
+              创建
+            </button>
+          </form>
 
-          {/* 5分场 */}
-          <div 
-            onClick={() => handleJoin(5)}
-            className="bg-gradient-to-r from-blue-500 to-blue-700 text-white h-32 rounded-2xl shadow-xl flex items-center justify-center text-3xl font-bold cursor-pointer active:scale-95 transition-transform border-2 border-blue-400/30"
-          >
-            5 分场
-          </div>
-
-          {/* 10分场 */}
-          <div 
-            onClick={() => handleJoin(10)}
-            className="bg-gradient-to-r from-purple-500 to-purple-700 text-white h-32 rounded-2xl shadow-xl flex items-center justify-center text-3xl font-bold cursor-pointer active:scale-95 transition-transform border-2 border-purple-400/30"
-          >
-            10 分场
+          <div className="flex flex-col gap-2">
+            {games.map((game) => (
+              <div
+                key={game.id}
+                onClick={() => handleJoinGame(game.id)}
+                className="bg-white p-4 rounded-lg shadow-md cursor-pointer hover:bg-gray-200 transition flex justify-between items-center"
+              >
+                <span>{game.name}</span>
+                <span>{game.players} / 4</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
