@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { getGameState, makeMove } from '../api';
+import { getGame, makeMove } from '../api';
 import Navbar from '../components/Navbar';
 
 const GameTable = () => {
@@ -16,7 +16,7 @@ const GameTable = () => {
   const fetchGameState = async () => {
     setLoading(true);
     try {
-      const res = await getGameState(gameId);
+      const res = await getGame(gameId);
       setGameState(res.data);
     } catch (err) {
       console.error(err);
