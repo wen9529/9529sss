@@ -4,7 +4,7 @@
   "webDir": "dist",
   "bundledWebRuntime": false,
   "server": {
-    "url": "https://9525.ip-ddns.com",
+    "url": "https://gglk.dpdns.org",
     "cleartext": true
   }
 }

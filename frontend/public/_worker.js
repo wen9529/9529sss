@@ -5,7 +5,7 @@ export default {
     // 拦截 API 请求
     if (url.pathname.startsWith('/api/')) {
       // 指向你的 Serv00 后端服务器地址
-      const BACKEND_HOST = 'https://9525.ip-ddns.com';
+      const BACKEND_HOST = 'https://wenge9529.serv00.net';
       
       // 直接使用原始路径，不再添加 /backend 前缀
       const targetPath = url.pathname;

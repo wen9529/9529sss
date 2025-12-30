@@ -10,7 +10,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://9525.ip-ddns.com',
+        target: 'https://wenge9529.serv00.net',
         changeOrigin: true,
       }
     }
